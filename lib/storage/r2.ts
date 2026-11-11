@@ -6,6 +6,7 @@ export type R2Configuration = {
   accessKeyId: string;
   secretAccessKey: string;
   region: string;
+  endpoint: string;
 };
 
 const requiredR2Variables = [
@@ -38,15 +39,25 @@ export function getR2Configuration():
       bucketName: values.R2_BUCKET_NAME!,
       accessKeyId: values.R2_ACCESS_KEY_ID!,
       secretAccessKey: values.R2_SECRET_ACCESS_KEY!,
-      region: process.env.R2_REGION?.trim() || "auto"
+      region: process.env.R2_REGION?.trim() || "auto",
+      endpoint:
+        process.env.R2_ENDPOINT?.trim() ||
+        `https://${values.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
     }
   };
 }
 
 export function createR2Client(config: R2Configuration): S3Client {
+  const endpoint = new URL(config.endpoint);
+  const expectedHost = `${config.accountId}.r2.cloudflarestorage.com`;
+
+  if (endpoint.protocol !== "https:" || endpoint.hostname !== expectedHost) {
+    throw new Error("R2_ENDPOINT must be the HTTPS S3 endpoint for the configured account.");
+  }
+
   return new S3Client({
     region: config.region,
-    endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
+    endpoint: endpoint.toString(),
     credentials: {
       accessKeyId: config.accessKeyId,
       secretAccessKey: config.secretAccessKey
