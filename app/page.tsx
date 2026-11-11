@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AccountMenu from "@/components/account-menu";
 
 const videos = [
@@ -12,17 +12,17 @@ const videos = [
   { id: 6, title: "City lights after sunset", creator: "Urban Frames", category: "Travel", duration: "01:54", views: "9.2K views", src: "https://www.w3schools.com/html/mov_bbb.mp4", thumb: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=800&q=80" }
 ];
 
-const categories = ["All", "Nature", "Travel", "Lifestyle", "Food"];
+const categories = ["All", "Nature", "Travel", "Lifestyle", "Food"];\n\ntype VideoItem = (typeof videos)[number];\ntype ApprovedVideoRow = { id: string; title: string; category: string | null; video_url: string; thumbnail_url: string | null; duration_seconds: number | null; views: number | null; user_id: string | null };\n\nfunction formatDuration(seconds: number | null) {\n  if (seconds == null || !Number.isFinite(seconds)) return "Video";\n  const minutes = Math.floor(seconds / 60);\n  return `${String(minutes).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;\n}\n\nfunction formatViews(views: number | null) {\n  return `${new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(views ?? 0)} views`;\n}
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
-  const [activeVideo, setActiveVideo] = useState<(typeof videos)[number] | null>(null);
+  const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);\n  const [feedNotice, setFeedNotice] = useState("Loading approved videos...");\n\n  useEffect(() => {\n    let cancelled = false;\n    fetch("/api/videos", { cache: "no-store" })\n      .then(async (response) => {\n        if (!response.ok) throw new Error("The approved video feed is not configured yet.");\n        return response.json();\n      })\n      .then((payload: { videos?: ApprovedVideoRow[] }) => {\n        if (cancelled) return;\n        const rows = Array.isArray(payload.videos) ? payload.videos : [];\n        const liveVideos: VideoItem[] = rows.map((video) => ({\n          id: video.id,\n          title: video.title,\n          creator: "XVideo Creator",\n          category: video.category || "Other",\n          duration: formatDuration(video.duration_seconds),\n          views: formatViews(video.views),\n          src: video.video_url,\n          thumb: video.thumbnail_url || "https://images.unsplash.com/photo-1492684223066-acedb1a3e8f5?w=800&q=80"\n        }));\n        if (liveVideos.length > 0) {\n          setFeedVideos(liveVideos);\n          setFeedNotice("");\n        } else {\n          setFeedVideos([]);\n          setFeedNotice("No approved videos yet. Check back soon.");\n        }\n      })\n      .catch(() => {\n        if (!cancelled) setFeedNotice("Showing demo videos. Connect Supabase to load approved videos.");\n      });\n    return () => { cancelled = true; };\n  }, []);\n  const [feedVideos, setFeedVideos] = useState<VideoItem[]>(videos);
 
-  const filtered = useMemo(() => videos.filter((video) =>
+  const filtered = useMemo(() => feedVideos.filter((video) =>
     (category === "All" || video.category === category) &&
     (video.title.toLowerCase().includes(query.toLowerCase()) || video.creator.toLowerCase().includes(query.toLowerCase()))
-  ), [query, category]);
+  ), [query, category, feedVideos]);
 
   return (
     <main className="app-shell">
@@ -59,7 +59,7 @@ export default function Home() {
         </section>
 
         <section id="videos" className="video-section">
-          <div className="section-heading"><div><span className="eyebrow">HANDPICKED FOR YOU</span><h2>Explore videos</h2></div><span className="result-count">{filtered.length} videos</span></div>
+          <div className="section-heading"><div><span className="eyebrow">HANDPICKED FOR YOU</span><h2>Explore videos</h2>{feedNotice && <p className="feed-notice" role="status">{feedNotice}</p>}</div><span className="result-count">{filtered.length} videos</span></div>
           <div className="video-grid">
             {filtered.map((video) => (
               <button className="video-card" key={video.id} onClick={() => setActiveVideo(video)}>
