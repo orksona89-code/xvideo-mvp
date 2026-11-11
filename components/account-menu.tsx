@@ -56,6 +56,7 @@ export default function AccountMenu() {
   return (
     <div className="account-menu">
       <span className="account-email" title={email}>{email}</span>
+      <Link className="account-link" href="/profile">Profile</Link>
       <button className="account-signout" type="button" onClick={signOut}>Sign out</button>
     </div>
   );
