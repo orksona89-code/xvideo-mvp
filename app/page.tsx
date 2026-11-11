@@ -53,6 +53,7 @@ export default function Home() {
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>(demoVideos);
   const [feedNotice, setFeedNotice] = useState("Loading approved videos...");
   const [showUploadNotice, setShowUploadNotice] = useState(false);
+  const [shareMessage, setShareMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -102,6 +103,37 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!activeVideo && !showUploadNotice) return;
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setActiveVideo(null);
+        setShowUploadNotice(false);
+      }
+    }
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [activeVideo, showUploadNotice]);
+
+  async function shareActiveVideo() {
+    if (!activeVideo) return;
+    const shareUrl = window.location.href.split("#")[0] + `#videos`;
+    const shareData = { title: activeVideo.title, text: `Watch ${activeVideo.title} on XVideo`, url: shareUrl };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setShareMessage("Share dialog opened.");
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(`${shareData.text}: ${shareData.url}`);
+        setShareMessage("Video link copied.");
+      } else {
+        setShareMessage(shareData.url);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name !== "AbortError") setShareMessage("Could not share this video. Please try again.");
+    }
+  }
+
   const filtered = useMemo(
     () =>
       feedVideos.filter(
@@ -129,7 +161,7 @@ export default function Home() {
       <section className="main-content">
         <header className="topbar">
           <div className="mobile-brand"><span className="brand-mark">X</span> XVideo</div>
-          <label className="search-box"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search videos..." /></label>
+          <label className="search-box"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search videos..." aria-label="Search videos" />{query && <button className="search-clear" type="button" onClick={() => setQuery("")} aria-label="Clear search">×</button>}</label>
           <div className="topbar-actions"><AccountMenu /><button className="upload-button" onClick={() => setShowUploadNotice(true)}>＋ Upload</button></div>
         </header>
 
@@ -158,7 +190,7 @@ export default function Home() {
           </div>
           <div className="video-grid">
             {filtered.map((video) => (
-              <button className="video-card" key={video.id} onClick={() => setActiveVideo(video)}>
+              <button className="video-card" key={video.id} onClick={() => { setActiveVideo(video); setShareMessage(""); }}>
                 <div className="thumbnail"><img src={video.thumb} alt="" /><span className="duration">{video.duration}</span><span className="play-overlay">▶</span></div>
                 <div className="video-info"><div className="avatar">{video.creator.charAt(0)}</div><div><h3>{video.title}</h3><p>{video.creator}</p><p>{video.views} · {video.category}</p></div></div>
               </button>
@@ -185,9 +217,11 @@ export default function Home() {
         <div className="modal-backdrop" onClick={() => setActiveVideo(null)}>
           <div className="video-modal" onClick={(event) => event.stopPropagation()}>
             <button className="close-button" onClick={() => setActiveVideo(null)} aria-label="Close video">×</button>
-            <video controls autoPlay src={activeVideo.src} />
+            <video controls autoPlay playsInline preload="metadata" src={activeVideo.src} />
             <h2>{activeVideo.title}</h2>
-            <p>{activeVideo.creator} · {activeVideo.views}</p>
+            <p>{activeVideo.creator} · {activeVideo.views} · {activeVideo.category}</p>
+            <div className="video-modal-actions"><button className="upload-button" type="button" onClick={shareActiveVideo}>Share video</button><button className="secondary-action" type="button" onClick={() => setActiveVideo(null)}>Close</button></div>
+            {shareMessage && <p className="share-message" role="status">{shareMessage}</p>}
           </div>
         </div>
       )}
