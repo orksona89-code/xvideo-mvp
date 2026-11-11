@@ -30,3 +30,8 @@
 .google-symbol{color:#4285f4}.apple-symbol{color:#fff;font-size:20px}.facebook-symbol{color:#1877f2;font-size:23px}
 .auth-divider{display:flex;align-items:center;gap:12px;margin:2px 0 20px;color:#858895;font-size:11px}
 .auth-divider:before,.auth-divider:after{content:"";height:1px;background:#30323e;flex:1}
+
+.notice-modal{position:relative;width:min(480px,100%);background:#171923;border:1px solid #30323e;padding:28px;border-radius:14px;box-shadow:0 24px 80px #0008}
+.notice-modal h2{font-size:22px;line-height:1.25;margin:12px 36px 10px 0}
+.notice-modal p{color:#b7b9c4;font-size:13px;line-height:1.7;margin:0 0 22px}
+.notice-modal .upload-button{min-width:110px}
