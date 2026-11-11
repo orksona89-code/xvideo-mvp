@@ -52,6 +52,7 @@ export default function Home() {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>(demoVideos);
   const [feedNotice, setFeedNotice] = useState("Loading approved videos...");
+  const [showUploadNotice, setShowUploadNotice] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,11 +114,11 @@ export default function Home() {
   );
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" id="top">
       <aside className="sidebar">
-        <a className="brand" href="#"><span className="brand-mark">X</span> XVideo</a>
+        <a className="brand" href="#top"><span className="brand-mark">X</span> XVideo</a>
         <nav>
-          <a className="nav-item active" href="#">⌂ <span>Home</span></a>
+          <a className="nav-item active" href="#top">⌂ <span>Home</span></a>
           <a className="nav-item" href="#videos">▶ <span>Explore</span></a>
           <a className="nav-item" href="#categories">▦ <span>Categories</span></a>
         </nav>
@@ -129,7 +130,7 @@ export default function Home() {
         <header className="topbar">
           <div className="mobile-brand"><span className="brand-mark">X</span> XVideo</div>
           <label className="search-box"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search videos..." /></label>
-          <div className="topbar-actions"><AccountMenu /><button className="upload-button" onClick={() => alert("Video upload will be enabled after secure storage and moderation are configured.")}>＋ Upload</button></div>
+          <div className="topbar-actions"><AccountMenu /><button className="upload-button" onClick={() => setShowUploadNotice(true)}>＋ Upload</button></div>
         </header>
 
         <div className="hero">
@@ -167,6 +168,18 @@ export default function Home() {
         </section>
         <footer>© 2026 XVideo · Demo videos only · Community guidelines</footer>
       </section>
+
+      {showUploadNotice && (
+        <div className="modal-backdrop" onClick={() => setShowUploadNotice(false)}>
+          <section className="notice-modal" role="dialog" aria-modal="true" aria-labelledby="upload-notice-title" onClick={(event) => event.stopPropagation()}>
+            <button className="close-button" onClick={() => setShowUploadNotice(false)} aria-label="Close upload notice">×</button>
+            <span className="eyebrow">UPLOADS COMING LATER</span>
+            <h2 id="upload-notice-title">Video uploads are not available yet</h2>
+            <p>We are preparing secure video storage, review, and reporting tools before accepting uploads. You can watch the demo videos while this is being completed.</p>
+            <button className="upload-button" type="button" onClick={() => setShowUploadNotice(false)}>Got it</button>
+          </section>
+        </div>
+      )}
 
       {activeVideo && (
         <div className="modal-backdrop" onClick={() => setActiveVideo(null)}>
