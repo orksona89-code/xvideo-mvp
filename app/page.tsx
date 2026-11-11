@@ -40,7 +40,7 @@ export default function Home() {
         <header className="topbar">
           <div className="mobile-brand"><span className="brand-mark">X</span> XVideo</div>
           <label className="search-box"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search videos..." /></label>
-          <button className="upload-button" onClick={() => alert("Video upload will be enabled after storage and moderation are configured.")}>＋ Upload</button>
+          <div className="topbar-actions"><a className="account-link" href="/auth">Sign in</a><button className="upload-button" onClick={() => alert("Video upload will be enabled after secure storage and moderation are configured.")}>＋ Upload</button></div>
         </header>
 
         <div className="hero">
