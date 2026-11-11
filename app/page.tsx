@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import AccountMenu from "@/components/account-menu";
+import VideoCommunity from "@/components/video-community";
 
 const demoVideos = [
   { id: 1, title: "Beautiful nature in 4K", creator: "Nature Studio", category: "Nature", duration: "04:32", views: "12K views", src: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", thumb: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=800&q=80" },
@@ -222,6 +223,7 @@ export default function Home() {
             <p>{activeVideo.creator} · {activeVideo.views} · {activeVideo.category}</p>
             <div className="video-modal-actions"><button className="upload-button" type="button" onClick={shareActiveVideo}>Share video</button><button className="secondary-action" type="button" onClick={() => setActiveVideo(null)}>Close</button></div>
             {shareMessage && <p className="share-message" role="status">{shareMessage}</p>}
+            <VideoCommunity videoId={activeVideo.id} isDemo={typeof activeVideo.id === "number"} />
           </div>
         </div>
       )}
