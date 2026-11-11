@@ -72,8 +72,7 @@ Production and Preview environments you actually use:
 - `R2_SECRET_ACCESS_KEY`: the R2 token's Secret Access Key.
 - `R2_REGION`: `auto` (default; keep this for Cloudflare R2).
 
-The S3 endpoint is constructed server-side as
-`https://<R2_ACCOUNT_ID>.r2.cloudflarestorage.com`, with region `auto`.
+The S3 endpoint is configured with `R2_ENDPOINT` (for example, `https://<R2_ACCOUNT_ID>.r2.cloudflarestorage.com`) and validated against the account ID. Region defaults to `auto`.
 Keep every R2 credential server-only. Never use a `NEXT_PUBLIC_` prefix, commit
 credentials, or send them through chat. After adding or changing environment variables,
 redeploy the Vercel project.
