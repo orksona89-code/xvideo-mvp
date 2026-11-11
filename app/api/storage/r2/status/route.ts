@@ -42,7 +42,7 @@ export async function GET() {
       configured: true,
       connected: true,
       bucketName: r2.config.bucketName,
-      bucketAccess: "read-write-token-verified",
+      bucketAccess: "verified",
       uploadsEnabled: false
     });
   } catch (error) {
