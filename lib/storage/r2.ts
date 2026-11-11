@@ -1,4 +1,12 @@
-import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadBucketCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export type R2Configuration = {
   accountId: string;
@@ -70,6 +78,71 @@ export async function checkR2BucketAccess(config: R2Configuration): Promise<void
   const client = createR2Client(config);
   try {
     await client.send(new HeadBucketCommand({ Bucket: config.bucketName }));
+  } finally {
+    client.destroy();
+  }
+}
+
+export async function createR2UploadUrl(
+  config: R2Configuration,
+  key: string,
+  contentType: string
+): Promise<string> {
+  const client = createR2Client(config);
+  try {
+    return await getSignedUrl(
+      client,
+      new PutObjectCommand({
+        Bucket: config.bucketName,
+        Key: key,
+        ContentType: contentType
+      }),
+      { expiresIn: 300 }
+    );
+  } finally {
+    client.destroy();
+  }
+}
+
+export async function inspectR2Object(
+  config: R2Configuration,
+  key: string
+): Promise<{ contentLength: number; contentType: string | undefined }> {
+  const client = createR2Client(config);
+  try {
+    const result = await client.send(
+      new HeadObjectCommand({ Bucket: config.bucketName, Key: key })
+    );
+    return {
+      contentLength: result.ContentLength ?? 0,
+      contentType: result.ContentType
+    };
+  } finally {
+    client.destroy();
+  }
+}
+
+export async function deleteR2Object(config: R2Configuration, key: string): Promise<void> {
+  const client = createR2Client(config);
+  try {
+    await client.send(new DeleteObjectCommand({ Bucket: config.bucketName, Key: key }));
+  } finally {
+    client.destroy();
+  }
+}
+
+export async function createR2ReadUrl(
+  config: R2Configuration,
+  key: string,
+  expiresIn = 3600
+): Promise<string> {
+  const client = createR2Client(config);
+  try {
+    return await getSignedUrl(
+      client,
+      new GetObjectCommand({ Bucket: config.bucketName, Key: key }),
+      { expiresIn }
+    );
   } finally {
     client.destroy();
   }
