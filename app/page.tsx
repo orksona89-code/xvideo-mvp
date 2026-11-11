@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AccountMenu from "@/components/account-menu";
 
-const videos = [
+const demoVideos = [
   { id: 1, title: "Beautiful nature in 4K", creator: "Nature Studio", category: "Nature", duration: "04:32", views: "12K views", src: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", thumb: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=800&q=80" },
   { id: 2, title: "A peaceful day by the ocean", creator: "Travel Moments", category: "Travel", duration: "02:18", views: "8.4K views", src: "https://www.w3schools.com/html/mov_bbb.mp4", thumb: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80" },
   { id: 3, title: "Creative workspace inspiration", creator: "Daily Create", category: "Lifestyle", duration: "03:06", views: "5.1K views", src: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", thumb: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80" },
@@ -12,17 +12,105 @@ const videos = [
   { id: 6, title: "City lights after sunset", creator: "Urban Frames", category: "Travel", duration: "01:54", views: "9.2K views", src: "https://www.w3schools.com/html/mov_bbb.mp4", thumb: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=800&q=80" }
 ];
 
-const categories = ["All", "Nature", "Travel", "Lifestyle", "Food"];\n\ntype VideoItem = (typeof videos)[number];\ntype ApprovedVideoRow = { id: string; title: string; category: string | null; video_url: string; thumbnail_url: string | null; duration_seconds: number | null; views: number | null; user_id: string | null };\n\nfunction formatDuration(seconds: number | null) {\n  if (seconds == null || !Number.isFinite(seconds)) return "Video";\n  const minutes = Math.floor(seconds / 60);\n  return `${String(minutes).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;\n}\n\nfunction formatViews(views: number | null) {\n  return `${new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(views ?? 0)} views`;\n}
+type VideoItem = {
+  id: string | number;
+  title: string;
+  creator: string;
+  category: string;
+  duration: string;
+  views: string;
+  src: string;
+  thumb: string;
+};
+
+type ApprovedVideoRow = {
+  id: string;
+  title: string;
+  category: string | null;
+  video_url: string;
+  thumbnail_url: string | null;
+  duration_seconds: number | null;
+  views: number | null;
+};
+
+const categories = ["All", "Nature", "Travel", "Lifestyle", "Food", "Other"];
+
+function formatDuration(seconds: number | null) {
+  if (seconds == null || !Number.isFinite(seconds)) return "Video";
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  return `${String(minutes).padStart(2, "0")}:${String(safeSeconds % 60).padStart(2, "0")}`;
+}
+
+function formatViews(views: number | null) {
+  return `${new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(views ?? 0)} views`;
+}
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
-  const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);\n  const [feedNotice, setFeedNotice] = useState("Loading approved videos...");\n\n  useEffect(() => {\n    let cancelled = false;\n    fetch("/api/videos", { cache: "no-store" })\n      .then(async (response) => {\n        if (!response.ok) throw new Error("The approved video feed is not configured yet.");\n        return response.json();\n      })\n      .then((payload: { videos?: ApprovedVideoRow[] }) => {\n        if (cancelled) return;\n        const rows = Array.isArray(payload.videos) ? payload.videos : [];\n        const liveVideos: VideoItem[] = rows.map((video) => ({\n          id: video.id,\n          title: video.title,\n          creator: "XVideo Creator",\n          category: video.category || "Other",\n          duration: formatDuration(video.duration_seconds),\n          views: formatViews(video.views),\n          src: video.video_url,\n          thumb: video.thumbnail_url || "https://images.unsplash.com/photo-1492684223066-acedb1a3e8f5?w=800&q=80"\n        }));\n        if (liveVideos.length > 0) {\n          setFeedVideos(liveVideos);\n          setFeedNotice("");\n        } else {\n          setFeedVideos([]);\n          setFeedNotice("No approved videos yet. Check back soon.");\n        }\n      })\n      .catch(() => {\n        if (!cancelled) setFeedNotice("Showing demo videos. Connect Supabase to load approved videos.");\n      });\n    return () => { cancelled = true; };\n  }, []);\n  const [feedVideos, setFeedVideos] = useState<VideoItem[]>(videos);
+  const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
+  const [feedVideos, setFeedVideos] = useState<VideoItem[]>(demoVideos);
+  const [feedNotice, setFeedNotice] = useState("Loading approved videos...");
 
-  const filtered = useMemo(() => feedVideos.filter((video) =>
-    (category === "All" || video.category === category) &&
-    (video.title.toLowerCase().includes(query.toLowerCase()) || video.creator.toLowerCase().includes(query.toLowerCase()))
-  ), [query, category, feedVideos]);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadApprovedVideos() {
+      try {
+        const response = await fetch("/api/videos", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("The approved video feed is temporarily unavailable.");
+        }
+
+        const payload: { videos?: ApprovedVideoRow[] } = await response.json();
+        const rows = Array.isArray(payload.videos) ? payload.videos : [];
+        const liveVideos: VideoItem[] = rows
+          .filter((video) => typeof video.video_url === "string" && video.video_url.length > 0)
+          .map((video) => ({
+            id: video.id,
+            title: video.title,
+            creator: "XVideo Creator",
+            category: video.category || "Other",
+            duration: formatDuration(video.duration_seconds),
+            views: formatViews(video.views),
+            src: video.video_url,
+            thumb: video.thumbnail_url || "https://images.unsplash.com/photo-1492684223066-acedb1a3e8f5?w=800&q=80"
+          }));
+
+        if (cancelled) return;
+
+        if (liveVideos.length > 0) {
+          setFeedVideos(liveVideos);
+          setFeedNotice("");
+        } else {
+          setFeedVideos(demoVideos);
+          setFeedNotice("No approved videos yet. Showing demo videos for now.");
+        }
+      } catch {
+        if (!cancelled) {
+          setFeedVideos(demoVideos);
+          setFeedNotice("Showing demo videos. The Supabase video feed is not available yet.");
+        }
+      }
+    }
+
+    void loadApprovedVideos();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const filtered = useMemo(
+    () =>
+      feedVideos.filter(
+        (video) =>
+          (category === "All" || video.category === category) &&
+          (video.title.toLowerCase().includes(query.toLowerCase()) ||
+            video.creator.toLowerCase().includes(query.toLowerCase()))
+      ),
+    [query, category, feedVideos]
+  );
 
   return (
     <main className="app-shell">
@@ -40,7 +128,7 @@ export default function Home() {
       <section className="main-content">
         <header className="topbar">
           <div className="mobile-brand"><span className="brand-mark">X</span> XVideo</div>
-          <label className="search-box"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search videos..." /></label>
+          <label className="search-box"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search videos..." /></label>
           <div className="topbar-actions"><AccountMenu /><button className="upload-button" onClick={() => alert("Video upload will be enabled after secure storage and moderation are configured.")}>＋ Upload</button></div>
         </header>
 
@@ -59,7 +147,14 @@ export default function Home() {
         </section>
 
         <section id="videos" className="video-section">
-          <div className="section-heading"><div><span className="eyebrow">HANDPICKED FOR YOU</span><h2>Explore videos</h2>{feedNotice && <p className="feed-notice" role="status">{feedNotice}</p>}</div><span className="result-count">{filtered.length} videos</span></div>
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">HANDPICKED FOR YOU</span>
+              <h2>Explore videos</h2>
+              {feedNotice && <p className="feed-notice" role="status">{feedNotice}</p>}
+            </div>
+            <span className="result-count">{filtered.length} videos</span>
+          </div>
           <div className="video-grid">
             {filtered.map((video) => (
               <button className="video-card" key={video.id} onClick={() => setActiveVideo(video)}>
@@ -73,7 +168,16 @@ export default function Home() {
         <footer>© 2026 XVideo · Demo videos only · Community guidelines</footer>
       </section>
 
-      {activeVideo && <div className="modal-backdrop" onClick={() => setActiveVideo(null)}><div className="video-modal" onClick={(e) => e.stopPropagation()}><button className="close-button" onClick={() => setActiveVideo(null)}>×</button><video controls autoPlay src={activeVideo.src} /><h2>{activeVideo.title}</h2><p>{activeVideo.creator} · {activeVideo.views}</p></div></div>}
+      {activeVideo && (
+        <div className="modal-backdrop" onClick={() => setActiveVideo(null)}>
+          <div className="video-modal" onClick={(event) => event.stopPropagation()}>
+            <button className="close-button" onClick={() => setActiveVideo(null)} aria-label="Close video">×</button>
+            <video controls autoPlay src={activeVideo.src} />
+            <h2>{activeVideo.title}</h2>
+            <p>{activeVideo.creator} · {activeVideo.views}</p>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
