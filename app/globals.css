@@ -15,3 +15,5 @@
 .auth-form input:focus{border-color:#ff6682}.auth-submit{width:100%;margin-top:5px}.auth-submit:disabled{opacity:.65;cursor:wait}
 .auth-message{font-size:12px;line-height:1.6;color:#ffb3c0;background:#2b1922;padding:12px;border-radius:8px;margin:16px 0 0}
 .auth-back{display:inline-block;color:#a5a7b2;text-decoration:none;font-size:12px;margin-top:22px}
+
+.topbar-actions{display:flex;align-items:center;gap:12px}.account-link{color:#d8d9e0;text-decoration:none;font-size:13px;font-weight:600}.account-link:hover{color:#ff7890}
