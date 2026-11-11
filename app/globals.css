@@ -35,3 +35,10 @@
 .notice-modal h2{font-size:22px;line-height:1.25;margin:12px 36px 10px 0}
 .notice-modal p{color:#b7b9c4;font-size:13px;line-height:1.7;margin:0 0 22px}
 .notice-modal .upload-button{min-width:110px}
+
+.search-clear{border:0;background:transparent;color:#b9bbc5;font-size:21px;line-height:1;padding:3px 5px;cursor:pointer}
+.search-clear:hover{color:#fff}
+.video-modal-actions{display:flex;gap:10px;align-items:center;margin-top:16px}
+.secondary-action{border:1px solid #383b49;background:#20222d;color:#f5f6fa;border-radius:9px;padding:12px 18px;font:600 14px 'DM Sans';cursor:pointer}
+.secondary-action:hover{border-color:#ff6682}
+.share-message{color:#ffb3c0;font-size:12px;margin:10px 0 0}
