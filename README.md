@@ -45,3 +45,14 @@ The Supabase client helpers use cookie-based sessions through `@supabase/ssr`. T
 
 ## Before production
 Do not accept public uploads until moderation, rights/consent verification, abuse reporting, security, and provider approval are in place. Never allow illegal content or content involving minors.
+
+## Social sign-in (Google, Apple, Facebook)
+
+The auth page includes Google, Apple, and Facebook buttons using Supabase OAuth. To make each provider work, enable it in Supabase Dashboard → Authentication → Providers and enter that provider's OAuth Client ID and Client Secret. The website code alone cannot create those third-party credentials.
+
+In Supabase Dashboard → Authentication → URL Configuration:
+- Set the Site URL to the deployed Vercel website URL.
+- Add the deployed website URL followed by `/auth/callback` to the Redirect URLs allow list.
+- For local testing, also add `http://localhost:3000/auth/callback`.
+
+For each provider's developer console, add the Supabase provider callback URL shown on that provider's Supabase settings page as its authorized redirect URI. Google, Apple, and Facebook each require their own developer-app setup and credentials. Never place provider client secrets in Vercel `NEXT_PUBLIC_*` variables or in source code.
