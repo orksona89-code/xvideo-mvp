@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import AccountMenu from "@/components/account-menu";
 
 const videos = [
   { id: 1, title: "Beautiful nature in 4K", creator: "Nature Studio", category: "Nature", duration: "04:32", views: "12K views", src: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", thumb: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=800&q=80" },
@@ -40,7 +41,7 @@ export default function Home() {
         <header className="topbar">
           <div className="mobile-brand"><span className="brand-mark">X</span> XVideo</div>
           <label className="search-box"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search videos..." /></label>
-          <div className="topbar-actions"><a className="account-link" href="/auth">Sign in</a><button className="upload-button" onClick={() => alert("Video upload will be enabled after secure storage and moderation are configured.")}>＋ Upload</button></div>
+          <div className="topbar-actions"><AccountMenu /><button className="upload-button" onClick={() => alert("Video upload will be enabled after secure storage and moderation are configured.")}>＋ Upload</button></div>
         </header>
 
         <div className="hero">
