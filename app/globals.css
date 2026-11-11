@@ -61,3 +61,16 @@
 .profile-card .auth-form input{width:100%;box-sizing:border-box;min-height:48px;border:1px solid #30323e;background:#10121a;color:#f5f6fa;border-radius:9px;padding:12px 14px;font:14px 'DM Sans'}
 .profile-card .auth-form input:focus{outline:2px solid #ff5277;outline-offset:1px}
 .profile-card .auth-form input:disabled{opacity:.7}
+
+.upload-card{width:min(560px,100%)}
+.upload-safety-note{border:1px solid #6c4930;background:#2a211a;color:#f2d7b7;border-radius:9px;padding:12px 14px;font-size:12px;line-height:1.65;margin:0 0 18px}
+.upload-account{font-size:12px;color:#9295a3;overflow-wrap:anywhere;margin:0 0 16px}
+.upload-signin{display:grid;gap:14px}.upload-signin p{font-size:13px;color:#b7b9c4;margin:0}
+.upload-card .auth-form textarea,.upload-card .auth-form select{width:100%;border:1px solid #30323e;background:#0e1017;border-radius:8px;padding:11px 12px;color:#fff;font:14px 'DM Sans';outline:none;resize:vertical}
+.upload-card .auth-form textarea:focus,.upload-card .auth-form select:focus{border-color:#ff6682}
+.upload-card .auth-form input[type=file]{height:auto;min-height:46px;padding:8px;background:#0e1017;color:#c6c7d0}
+.upload-declarations{display:grid;gap:12px;border:1px solid #30323e;border-radius:10px;padding:14px;background:#10121a}
+.upload-check,.auth-age-check{display:flex!important;align-items:flex-start;gap:10px!important;color:#c6c7d0!important;font-size:12px!important;font-weight:500!important;line-height:1.55}
+.upload-check input[type=checkbox],.auth-age-check input[type=checkbox]{flex:none;width:16px!important;height:16px!important;min-height:16px!important;margin:1px 0 0;accent-color:#ff5277}
+.auth-legal-note{font-size:11px;color:#9295a3;line-height:1.6;margin:-6px 0 0}
+.upload-success{font-size:12px;line-height:1.6;color:#b6f3c6;background:#17271e;border:1px solid #285b3a;padding:12px;border-radius:8px;margin:16px 0 0}
