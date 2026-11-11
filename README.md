@@ -10,8 +10,9 @@ A Next.js starter for a general-audience video-sharing prototype. The sample lib
 1. Copy `.env.example` to `.env.local`.
 2. Set `NEXT_PUBLIC_SUPABASE_URL` to your Supabase project URL.
 3. Set `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to a publishable key from the Supabase dashboard. Never use a service-role or secret key in a `NEXT_PUBLIC_` variable.
-4. Install the pinned dependencies with `npm install`. This also refreshes `package-lock.json` after the Supabase SDK packages were added.
+4. Install dependencies with `npm install`.
 5. Start the app with `npm run dev` and open http://localhost:3000.
+6. For a hosted deployment, add both environment variables in the hosting provider's project settings, then redeploy. Configure the Supabase Auth Site URL and allowed redirect URLs to match your deployed website domain.
 
 The Supabase client helpers use cookie-based sessions through `@supabase/ssr`. The root middleware refreshes sessions, and `lib/supabase/videos.ts` provides a server-side query that returns only rows with `status = 'approved'`. Existing database RLS policies remain the actual authorization boundary.
 
@@ -21,26 +22,26 @@ The Supabase client helpers use cookie-based sessions through `@supabase/ssr`. T
 - Video detail/player modal
 - Supabase browser and server client helpers
 - Cookie-based Supabase Auth session refresh
-- Server-side approved-video query
+- Server-side API endpoint for approved videos (`/api/videos`)
+- Homepage loads approved videos from Supabase and shows a safe demo fallback when the feed is unavailable
+- Account menu reflects the signed-in user and provides sign out
 - Upload remains disabled
 
 ## Important limitations
-- The homepage still displays hard-coded non-adult demo videos; it has not yet been switched to database results.
-- Authentication screens and signup/sign-in flows are not implemented yet.
-- The Supabase URL and publishable key must be configured locally before using the Supabase helpers.
-- The database schema exists, but this app's integration has not yet been run against a local build.
+- Supabase currently has no video rows, so the live feed will be empty until approved video records are added.
+- Authentication and database features require the Supabase URL and publishable key to be configured locally or in the hosting provider's environment settings.
+- A GitHub Actions workflow now regenerates the npm lockfile and runs a production build on pushes and pull requests. The build has not yet been confirmed successful.
 - Video uploads are intentionally disabled. Do not enable uploads until secure storage, quarantine/review, moderation, and reporting/takedown flows are implemented.
 - Cloudflare R2 is not configured.
 - Demo media must be replaced only with media you own or are licensed to distribute.
 
 ## Recommended next implementation sequence
-1. Add sign-up, sign-in, sign-out, and an account UI using Supabase Auth.
-2. Replace homepage demo data with the approved-video query and handle empty/loading/error states.
-3. Add likes and comments with authenticated actions and RLS checks.
-4. Build moderator review, reporting, takedown, appeal, and audit-log workflows.
-5. Only then design a secure upload pipeline: signed upload URLs, file-size/type limits, malware scanning, transcoding, thumbnail generation, and private quarantine.
-6. Choose storage and CDN providers only after verifying provider policies and operating-region requirements.
-7. Add privacy, terms, copyright, consent, and age/access controls as required by qualified legal advice.
+1. Verify the first hosted production build and configure deployment environment variables.
+2. Add likes and comments with authenticated actions and RLS checks.
+3. Build moderator review, reporting, takedown, appeal, and audit-log workflows.
+4. Only then design a secure upload pipeline: signed upload URLs, file-size/type limits, malware scanning, transcoding, thumbnail generation, and private quarantine.
+5. Choose storage and CDN providers only after verifying provider policies and operating-region requirements.
+6. Add privacy, terms, copyright, consent, and age/access controls as required by qualified legal advice.
 
 ## Before production
 Do not accept public uploads until moderation, rights/consent verification, abuse reporting, security, and provider approval are in place. Never allow illegal content or content involving minors.
