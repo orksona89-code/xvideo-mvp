@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -14,6 +14,13 @@ export default function AuthPage() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [oauthBusy, setOauthBusy] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "oauth_callback") {
+      setMessage("Social sign-in could not be completed. Check that the provider is enabled and its OAuth credentials and callback URL are configured in Supabase.");
+    }
+  }, []);
 
   async function signInWithProvider(provider: "google" | "facebook") {
     setOauthBusy(provider);
@@ -92,7 +99,6 @@ export default function AuthPage() {
             {oauthBusy === "facebook" ? "Connecting..." : "Continue with Facebook"}
           </button>
         </div>
-        <div className="auth-divider"><span>or continue with email</span></div>
         {message && <p className="auth-message" role="status">{message}</p>}
         <Link className="auth-back" href="/">← Back to videos</Link>
       </section>
