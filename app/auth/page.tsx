@@ -13,6 +13,23 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [oauthBusy, setOauthBusy] = useState<string | null>(null);
+
+  async function signInWithProvider(provider: "google" | "apple" | "facebook") {
+    setOauthBusy(provider);
+    setMessage("");
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: `${window.location.origin}/auth/callback` }
+      });
+      if (error) throw error;
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : `Unable to sign in with ${provider}. Please try again.`);
+      setOauthBusy(null);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,6 +75,21 @@ export default function AuthPage() {
           <button type="button" className={mode === "signin" ? "auth-tab selected" : "auth-tab"} onClick={() => { setMode("signin"); setMessage(""); }}>Sign in</button>
           <button type="button" className={mode === "signup" ? "auth-tab selected" : "auth-tab"} onClick={() => { setMode("signup"); setMessage(""); }}>Create account</button>
         </div>
+        <div className="social-auth" aria-label="Continue with a social account">
+          <button type="button" className="social-auth-button" onClick={() => signInWithProvider("google")} disabled={busy || oauthBusy !== null}>
+            <span className="social-symbol google-symbol" aria-hidden="true">G</span>
+            {oauthBusy === "google" ? "Connecting..." : "Continue with Google"}
+          </button>
+          <button type="button" className="social-auth-button" onClick={() => signInWithProvider("apple")} disabled={busy || oauthBusy !== null}>
+            <span className="social-symbol apple-symbol" aria-hidden="true">●</span>
+            {oauthBusy === "apple" ? "Connecting..." : "Continue with Apple"}
+          </button>
+          <button type="button" className="social-auth-button" onClick={() => signInWithProvider("facebook")} disabled={busy || oauthBusy !== null}>
+            <span className="social-symbol facebook-symbol" aria-hidden="true">f</span>
+            {oauthBusy === "facebook" ? "Connecting..." : "Continue with Facebook"}
+          </button>
+        </div>
+        <div className="auth-divider"><span>or continue with email</span></div>
         <form onSubmit={handleSubmit} className="auth-form">
           {mode === "signup" && <label>Name<input value={name} onChange={event => setName(event.target.value)} required maxLength={60} autoComplete="name" placeholder="Your name" /></label>}
           <label>Email<input type="email" value={email} onChange={event => setEmail(event.target.value)} required autoComplete="email" placeholder="you@example.com" /></label>
