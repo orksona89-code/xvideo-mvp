@@ -15,7 +15,7 @@ export default function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [oauthBusy, setOauthBusy] = useState<string | null>(null);
 
-  async function signInWithProvider(provider: "google" | "apple" | "facebook") {
+  async function signInWithProvider(provider: "google" | "facebook") {
     setOauthBusy(provider);
     setMessage("");
     try {
@@ -86,10 +86,6 @@ export default function AuthPage() {
           <button type="button" className="social-auth-button" onClick={() => signInWithProvider("google")} disabled={busy || oauthBusy !== null}>
             <span className="social-symbol google-symbol" aria-hidden="true">G</span>
             {oauthBusy === "google" ? "Connecting..." : "Continue with Google"}
-          </button>
-          <button type="button" className="social-auth-button" onClick={() => signInWithProvider("apple")} disabled={busy || oauthBusy !== null}>
-            <span className="social-symbol apple-symbol" aria-hidden="true">●</span>
-            {oauthBusy === "apple" ? "Connecting..." : "Continue with Apple"}
           </button>
           <button type="button" className="social-auth-button" onClick={() => signInWithProvider("facebook")} disabled={busy || oauthBusy !== null}>
             <span className="social-symbol facebook-symbol" aria-hidden="true">f</span>
