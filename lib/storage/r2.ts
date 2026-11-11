@@ -5,6 +5,7 @@ export type R2Configuration = {
   bucketName: string;
   accessKeyId: string;
   secretAccessKey: string;
+  region: string;
 };
 
 const requiredR2Variables = [
@@ -36,14 +37,15 @@ export function getR2Configuration():
       accountId: values.R2_ACCOUNT_ID!,
       bucketName: values.R2_BUCKET_NAME!,
       accessKeyId: values.R2_ACCESS_KEY_ID!,
-      secretAccessKey: values.R2_SECRET_ACCESS_KEY!
+      secretAccessKey: values.R2_SECRET_ACCESS_KEY!,
+      region: process.env.R2_REGION?.trim() || "auto"
     }
   };
 }
 
 export function createR2Client(config: R2Configuration): S3Client {
   return new S3Client({
-    region: "auto",
+    region: config.region,
     endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
     credentials: {
       accessKeyId: config.accessKeyId,
