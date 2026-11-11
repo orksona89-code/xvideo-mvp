@@ -56,3 +56,29 @@ In Supabase Dashboard → Authentication → URL Configuration:
 - For local testing, also add `http://localhost:3000/auth/callback`.
 
 For each provider's developer console, add the Supabase provider callback URL shown on that provider's Supabase settings page as its authorized redirect URI. Google, Apple, and Facebook each require their own developer-app setup and credentials. Never place provider client secrets in Vercel `NEXT_PUBLIC_*` variables or in source code.
+
+## Cloudflare R2 connection (private bucket)
+
+The project includes a **server-side R2 connectivity check** at `/api/storage/r2/status`.
+It requires a signed-in Supabase user and checks the configured private bucket with an S3
+`HeadBucket` request. It does not reveal credentials, object names, or signed URLs.
+
+Add these variables in Vercel → Project → Settings → Environment Variables, for the
+Production and Preview environments you actually use:
+
+- `R2_ACCOUNT_ID`: your Cloudflare account ID.
+- `R2_BUCKET_NAME`: `xvideo-mvp`.
+- `R2_ACCESS_KEY_ID`: the R2 token's Access Key ID.
+- `R2_SECRET_ACCESS_KEY`: the R2 token's Secret Access Key.
+
+The S3 endpoint is constructed server-side as
+`https://<R2_ACCOUNT_ID>.r2.cloudflarestorage.com`, with region `auto`.
+Keep every R2 credential server-only. Never use a `NEXT_PUBLIC_` prefix, commit
+credentials, or send them through chat. After adding or changing environment variables,
+redeploy the Vercel project.
+
+The R2 bucket should remain private. Public user uploads are not implemented or enabled.
+The upload UI and upload API must remain disabled until the storage provider's content
+policy is confirmed for this site's intended use and the platform has age/identity,
+consent/rights, moderation, reporting, and takedown controls. The R2 status endpoint
+only verifies configuration and bucket access; it does not enable uploads.
