@@ -96,7 +96,7 @@ export async function POST(request: Request) {
   if (!Number.isSafeInteger(fileSize) || fileSize < 1 || fileSize > MAX_VIDEO_BYTES) {
     return json({ error: "Choose a video file no larger than 100 MB." }, 400);
   }
-  if (!(contentType in ALLOWED_TYPES)) {
+  if (!Object.prototype.hasOwnProperty.call(ALLOWED_TYPES, contentType)) {
     return json({ error: "Only MP4 and WebM demo videos are supported." }, 400);
   }
 
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
     return json({ error: "The daily demo upload limit is five videos per account." }, 429);
   }
 
-  const uploadId = crypto.randomUUID();
+  const uploadId = globalThis.crypto.randomUUID();
   const key = `quarantine/${auth.user.id}/${uploadId}.${expectedExtension}`;
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
