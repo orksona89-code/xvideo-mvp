@@ -70,6 +70,7 @@ Production and Preview environments you actually use:
 - `R2_BUCKET_NAME`: `xvideo-mvp`.
 - `R2_ACCESS_KEY_ID`: the R2 token's Access Key ID.
 - `R2_SECRET_ACCESS_KEY`: the R2 token's Secret Access Key.
+- `R2_REGION`: `auto` (default; keep this for Cloudflare R2).
 
 The S3 endpoint is constructed server-side as
 `https://<R2_ACCOUNT_ID>.r2.cloudflarestorage.com`, with region `auto`.
