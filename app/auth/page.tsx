@@ -75,6 +75,13 @@ export default function AuthPage() {
           <button type="button" className={mode === "signin" ? "auth-tab selected" : "auth-tab"} onClick={() => { setMode("signin"); setMessage(""); }}>Sign in</button>
           <button type="button" className={mode === "signup" ? "auth-tab selected" : "auth-tab"} onClick={() => { setMode("signup"); setMessage(""); }}>Create account</button>
         </div>
+        <form onSubmit={handleSubmit} className="auth-form">
+          {mode === "signup" && <label>Name<input value={name} onChange={event => setName(event.target.value)} required maxLength={60} autoComplete="name" placeholder="Your name" /></label>}
+          <label>Email<input type="email" value={email} onChange={event => setEmail(event.target.value)} required autoComplete="email" placeholder="you@example.com" /></label>
+          <label>Password<input type="password" value={password} onChange={event => setPassword(event.target.value)} required minLength={8} autoComplete={mode === "signin" ? "current-password" : "new-password"} placeholder="At least 8 characters" /></label>
+          <button className="upload-button auth-submit" type="submit" disabled={busy}>{busy ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}</button>
+        </form>
+        <div className="auth-divider"><span>or continue with</span></div>
         <div className="social-auth" aria-label="Continue with a social account">
           <button type="button" className="social-auth-button" onClick={() => signInWithProvider("google")} disabled={busy || oauthBusy !== null}>
             <span className="social-symbol google-symbol" aria-hidden="true">G</span>
@@ -90,12 +97,6 @@ export default function AuthPage() {
           </button>
         </div>
         <div className="auth-divider"><span>or continue with email</span></div>
-        <form onSubmit={handleSubmit} className="auth-form">
-          {mode === "signup" && <label>Name<input value={name} onChange={event => setName(event.target.value)} required maxLength={60} autoComplete="name" placeholder="Your name" /></label>}
-          <label>Email<input type="email" value={email} onChange={event => setEmail(event.target.value)} required autoComplete="email" placeholder="you@example.com" /></label>
-          <label>Password<input type="password" value={password} onChange={event => setPassword(event.target.value)} required minLength={8} autoComplete={mode === "signin" ? "current-password" : "new-password"} placeholder="At least 8 characters" /></label>
-          <button className="upload-button auth-submit" type="submit" disabled={busy}>{busy ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}</button>
-        </form>
         {message && <p className="auth-message" role="status">{message}</p>}
         <Link className="auth-back" href="/">← Back to videos</Link>
       </section>
