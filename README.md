@@ -25,14 +25,17 @@ The Supabase client helpers use cookie-based sessions through `@supabase/ssr`. T
 - Server-side API endpoint for approved videos (`/api/videos`)
 - Homepage loads approved videos from Supabase and shows a safe demo fallback when the feed is unavailable
 - Account menu reflects the signed-in user and provides sign out
-- Upload remains disabled
+- Email/password sign-up and sign-in, including email confirmation redirect
+- Private demo-video upload page with a sign-in requirement and pending-review status
+- Short-lived R2 upload URLs; uploaded objects stay private in a quarantine path
+- Uploads remain disabled by default and are restricted to non-explicit demo files
 
 ## Important limitations
 - Supabase currently has no video rows, so the live feed will be empty until approved video records are added.
 - Authentication and database features require the Supabase URL and publishable key to be configured locally or in the hosting provider's environment settings.
 - A GitHub Actions workflow now regenerates the npm lockfile and runs a production build on pushes and pull requests. The build has not yet been confirmed successful.
-- Video uploads are intentionally disabled. Do not enable uploads until secure storage, quarantine/review, moderation, and reporting/takedown flows are implemented.
-- Cloudflare R2 is not configured.
+- Demo upload endpoints require `R2_DEMO_UPLOADS_ENABLED=true` and `R2_UPLOADS_MODE=demo`; leave the flag false unless testing non-explicit demo files on a provider whose terms permit this use. The current implementation enforces MP4/WebM, a 100 MB limit, five upload sessions per account per day, ownership/consent declarations, private quarantine storage, and `pending` review status. It does not automatically detect illegal or explicit content and does not include a moderator dashboard.
+- Cloudflare R2 connection is prepared in server-side code; Vercel credentials and environment scopes must still be configured.
 - Demo media must be replaced only with media you own or are licensed to distribute.
 
 ## Recommended next implementation sequence
@@ -82,3 +85,21 @@ The upload UI and upload API must remain disabled until the storage provider's c
 policy is confirmed for this site's intended use and the platform has age/identity,
 consent/rights, moderation, reporting, and takedown controls. The R2 status endpoint
 only verifies configuration and bucket access; it does not enable uploads.
+
+## Private demo uploads
+
+The Upload page is `/upload`. It requires a signed-in Supabase user. Uploading uses a short-lived presigned R2 PUT URL so video bytes go directly to R2 rather than through the Next.js request body. The R2 bucket must remain private.
+
+The feature is disabled by default. For a non-explicit demo test environment only, set:
+
+- `R2_DEMO_UPLOADS_ENABLED=true`
+- `R2_UPLOADS_MODE=demo`
+- `R2_ALLOWED_ORIGINS` to the exact comma-separated website origins permitted to upload.
+
+Configure an R2 bucket CORS policy for those exact origins with `PUT`, `AllowedHeaders: ["Content-Type"]`, `ExposeHeaders: ["ETag"]`, and an appropriate `MaxAgeSeconds`. The browser upload must send the same `Content-Type` included in the signed URL. See Cloudflare's [presigned URL](https://developers.cloudflare.com/r2/api/s3/presigned-urls/) and [CORS](https://developers.cloudflare.com/r2/buckets/cors/) documentation.
+
+Each completed demo upload creates a `videos` row with `status = 'pending'` and a private `storage_key`. The public feed reads only `approved` rows. Approved R2-backed videos are served using short-lived signed GET URLs. There is no moderator dashboard yet; pending videos must not be approved until an authorized review process has checked the file and its documentation.
+
+**Important hosting restriction:** The current Vercel Hobby deployment must not be used to host or enable an adult-content service. Vercel's current Acceptable Use Policy prohibits obscene content and restricts objectionable purposes on non-Enterprise subscriptions. Keep the project on demo-only media for development; move the adult platform to a host that explicitly accepts the use case and obtain written approval from each storage/streaming provider before enabling adult uploads. See [Vercel Acceptable Use Policy](https://vercel.com/legal/acceptable-use-policy).
+
+A self-declaration in a form is not age or identity verification. Do not publish any user-uploaded content until age/identity, participant consent and rights, moderation, reporting, and takedown processes are operational.
