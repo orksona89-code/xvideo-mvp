@@ -17,3 +17,5 @@
 .auth-back{display:inline-block;color:#a5a7b2;text-decoration:none;font-size:12px;margin-top:22px}
 
 .topbar-actions{display:flex;align-items:center;gap:12px}.account-link{color:#d8d9e0;text-decoration:none;font-size:13px;font-weight:600}.account-link:hover{color:#ff7890}
+
+.account-menu{display:flex;align-items:center;gap:10px;min-width:0}.account-email{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#c6c7d0;font-size:12px}.account-signout{border:1px solid var(--line);background:#151720;color:#e3e4ea;border-radius:8px;padding:9px 12px;font:600 12px 'DM Sans';cursor:pointer}.account-signout:hover{border-color:#ff6682;color:#ff9aac}@media(max-width:700px){.account-email{display:none}.topbar-actions{gap:8px}.account-signout{padding:9px 8px}}
