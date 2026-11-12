@@ -24,6 +24,7 @@ The Supabase client helpers use cookie-based sessions through `@supabase/ssr`. T
 - Cookie-based Supabase Auth session refresh
 - Server-side API endpoint for approved videos (`/api/videos`)
 - Homepage loads approved videos from Supabase and shows a safe demo fallback when the feed is unavailable
+- Likes, comments, and reports for published videos, with database RLS restricting community activity to approved videos
 - Account menu reflects the signed-in user and provides sign out
 - Email/password sign-up and sign-in, including email confirmation redirect
 - Private demo-video upload page with a sign-in requirement and pending-review status
@@ -32,6 +33,7 @@ The Supabase client helpers use cookie-based sessions through `@supabase/ssr`. T
 
 ## Important limitations
 - Supabase currently has no video rows, so the live feed will be empty until approved video records are added.
+- Reports are stored privately and users can submit them for approved videos, but a moderator queue/dashboard, review actions, takedowns, appeals, and audit logs are not implemented yet.
 - Authentication and database features require the Supabase URL and publishable key to be configured locally or in the hosting provider's environment settings.
 - A GitHub Actions workflow now regenerates the npm lockfile and runs a production build on pushes and pull requests. The build has not yet been confirmed successful.
 - Demo upload endpoints require `R2_DEMO_UPLOADS_ENABLED=true` and `R2_UPLOADS_MODE=demo`; leave the flag false unless testing non-explicit demo files on a provider whose terms permit this use. The current implementation enforces MP4/WebM, a 100 MB limit, five upload sessions per account per day, ownership/consent declarations, private quarantine storage, and `pending` review status. It does not automatically detect illegal or explicit content and does not include a moderator dashboard.
@@ -40,8 +42,8 @@ The Supabase client helpers use cookie-based sessions through `@supabase/ssr`. T
 
 ## Recommended next implementation sequence
 1. Verify the first hosted production build and configure deployment environment variables.
-2. Add likes and comments with authenticated actions and RLS checks.
-3. Build moderator review, reporting, takedown, appeal, and audit-log workflows.
+2. Build a moderator queue with role-based access, report triage, approve/reject/takedown actions, appeals, and an audit log.
+3. Add abuse controls for comments and reports, including rate limits and duplicate-report handling.
 4. Only then design a secure upload pipeline: signed upload URLs, file-size/type limits, malware scanning, transcoding, thumbnail generation, and private quarantine.
 5. Choose storage and CDN providers only after verifying provider policies and operating-region requirements.
 6. Add privacy, terms, copyright, consent, and age/access controls as required by qualified legal advice.
