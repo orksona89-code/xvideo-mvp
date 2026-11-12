@@ -55,11 +55,33 @@ export async function POST(request: Request) {
     .select("id, user_id, storage_key, title, description, category, mime_type, expected_size_bytes, expires_at, completed_at")
     .eq("id", uploadId)
     .eq("user_id", auth.user.id)
-    .is("completed_at", null)
     .maybeSingle();
 
   if (sessionError || !session) {
-    return json({ error: "Upload session was not found or was already used." }, 404);
+    return json({ error: "Upload session was not found." }, 404);
+  }
+
+  // Make retries safe: a completed request returns the already-created video.
+  if (session.completed_at) {
+    const { data: existingVideo } = await supabase
+      .from("videos")
+      .select("id, status")
+      .eq("storage_key", session.storage_key)
+      .eq("user_id", auth.user.id)
+      .maybeSingle();
+
+    if (existingVideo) {
+      return json({
+        success: true,
+        videoId: existingVideo.id,
+        status: existingVideo.status,
+        message: "This video has already been submitted for review."
+      });
+    }
+
+    return json({
+      error: "This upload session is already closed. Please start a new upload."
+    }, 409);
   }
   if (new Date(session.expires_at).getTime() < Date.now()) {
     return json({ error: "Upload session expired. Please start again." }, 410);
@@ -117,21 +139,43 @@ export async function POST(request: Request) {
     .single();
 
   if (videoError || !video) {
-    try {
-      await deleteR2Object(r2.config, session.storage_key);
-    } catch (deleteError) {
-      console.error("Failed upload cleanup:", deleteError);
+    // A concurrent retry may have inserted the same storage key first.
+    // Reuse that row instead of creating a duplicate or deleting its object.
+    const { data: existingVideo, error: lookupError } = await supabase
+      .from("videos")
+      .select("id, status")
+      .eq("storage_key", session.storage_key)
+      .eq("user_id", auth.user.id)
+      .maybeSingle();
+
+    if (lookupError || !existingVideo) {
+      // Keep the private quarantine object: an ambiguous database failure must
+      // never delete an object that a concurrent request may already reference.
+      console.error("Pending video row creation failed:", videoError?.message);
+      return json({ error: "The upload could not be submitted for review." }, 500);
     }
-    console.error("Pending video row creation failed:", videoError?.message);
-    return json({ error: "The upload could not be submitted for review." }, 500);
+
+    const { error: finalizeError } = await supabase
+      .from("video_upload_sessions")
+      .update({ completed_at: new Date().toISOString() })
+      .eq("id", uploadId)
+      .eq("user_id", auth.user.id);
+
+    if (finalizeError) {
+      console.error("Upload session finalization failed:", finalizeError.message);
+    }
+
+    return json({
+      success: true,
+      videoId: existingVideo.id,
+      status: existingVideo.status,
+      message: "This video has already been submitted for review."
+    }, 201);
   }
 
   const { error: updateError } = await supabase
     .from("video_upload_sessions")
-    .update({
-      completed_at: new Date().toISOString(),
-      video_id: video.id
-    })
+    .update({ completed_at: new Date().toISOString() })
     .eq("id", uploadId)
     .eq("user_id", auth.user.id);
 
