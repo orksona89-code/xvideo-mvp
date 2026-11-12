@@ -6,13 +6,12 @@ on:
   pull_request:
     branches: [main, master]
 
+# CI only verifies code; it does not need permission to write to the repository.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   verify:
-    # The lockfile sync commit should not trigger an endless workflow loop.
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -22,18 +21,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Regenerate package lock
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-      - name: Commit updated package lock
-        run: |
-          if ! git diff --quiet -- package-lock.json; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add package-lock.json
-            git commit -m "chore: sync npm lockfile"
-            git push
-          fi
-      - name: Install dependencies
+      - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
+      - name: Type-check application
+        run: npm run typecheck
       - name: Build application
         run: npm run build
