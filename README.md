@@ -85,8 +85,11 @@ redeploy the Vercel project.
 The R2 bucket should remain private. Public user uploads are not implemented or enabled.
 The upload UI and upload API must remain disabled until the storage provider's content
 policy is confirmed for this site's intended use and the platform has age/identity,
-consent/rights, moderation, reporting, and takedown controls. The R2 status endpoint
-only verifies configuration and bucket access; it does not enable uploads.
+consent/rights, moderation, reporting, and takedown controls. The production upload-signing
+endpoint also fails closed unless `R2_ALLOWED_ORIGINS` contains the exact allowed site
+origins. Upload completion is safe to retry and preserves a private R2 object when the
+database result is ambiguous. The R2 status endpoint only verifies configuration and
+bucket access; it does not enable uploads.
 
 ## Private demo uploads
 
