@@ -53,6 +53,12 @@ export async function POST(request: Request) {
     .map((value) => value.trim())
     .filter(Boolean);
   const origin = request.headers.get("origin");
+  if (allowedOrigins.length === 0 && process.env.NODE_ENV === "production") {
+    return json({
+      error: "Secure uploads are unavailable because the production origin allowlist is not configured.",
+      uploadsEnabled: false
+    }, 503);
+  }
   if (allowedOrigins.length > 0 && (!origin || !allowedOrigins.includes(origin))) {
     return json({ error: "This website origin is not allowed to upload." }, 403);
   }
